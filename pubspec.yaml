@@ -11,6 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  fl_chart: ^0.66.0
+  google_fonts: ^8.0.0
   # Quitamos google_fonts por ahora para que compile sí o sí
 
 dev_dependencies:

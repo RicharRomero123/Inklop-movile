@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:inklop/features/auth/presentation/main_screen.dart';
 
+// --- IMPORTANTE: Asegúrate de importar tu MainScreen correctamente ---
+// Ajusta esta ruta si tu MainScreen está en otra carpeta.
+// Por lo general sería: '../../home/presentation/main_screen.dart'
+
 class InterestsScreen extends StatefulWidget {
   const InterestsScreen({super.key});
 
@@ -9,7 +13,10 @@ class InterestsScreen extends StatefulWidget {
 }
 
 class _InterestsScreenState extends State<InterestsScreen> {
+  // Estado de los intereses seleccionados
   final Set<String> _selectedInterests = {'Gaming', 'Lifestyle'};
+
+  // Listas de opciones
   final List<String> _contentInterests = ['Grabación de Contenido', 'Clipping'];
   final List<String> _typeInterests = ['Gaming', 'Podcast', 'Education', 'Foodie', 'Travels', 'Fashion', 'Beauty', 'Fitness', 'Lifestyle'];
 
@@ -23,25 +30,23 @@ class _InterestsScreenState extends State<InterestsScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
           onPressed: () {
-            // Usamos pushAndRemoveUntil para que el usuario no pueda volver al registro dando "Atrás"
-            Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const MainScreen()),
-                    (route) => false // Borra todo el historial de navegación anterior
-            );
+            // Permite volver atrás si el usuario quiere corregir algo antes de finalizar
+            Navigator.pop(context);
           },
         ),
-
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // 1. ZONA SCROLL
+            // ---------------------------------------------------------
+            // 1. ZONA SCROLLABLE (Contenido)
+            // ---------------------------------------------------------
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
                   children: [
+                    // Avatar e Info
                     Center(
                       child: Container(
                         height: 80,
@@ -63,6 +68,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                     ),
                     const SizedBox(height: 30),
 
+                    // Sección 1: Intereses de Contenido
                     Align(
                       alignment: Alignment.centerLeft,
                       child: const Text('Intereses de Contenido', style: TextStyle(fontSize: 14, color: Colors.black87)),
@@ -76,6 +82,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
 
                     const SizedBox(height: 24),
 
+                    // Sección 2: Tipo de Contenido
                     Align(
                       alignment: Alignment.centerLeft,
                       child: const Text('Tipo de Contenido', style: TextStyle(fontSize: 14, color: Colors.black87)),
@@ -87,13 +94,15 @@ class _InterestsScreenState extends State<InterestsScreen> {
                       children: _typeInterests.map((interest) => _buildChip(interest)).toList(),
                     ),
 
-                    const SizedBox(height: 20), // Margen final
+                    const SizedBox(height: 20), // Margen final para el scroll
                   ],
                 ),
               ),
             ),
 
-            // 2. ZONA FIJA (Botón)
+            // ---------------------------------------------------------
+            // 2. ZONA FIJA (Botón Continuar)
+            // ---------------------------------------------------------
             Container(
               padding: const EdgeInsets.all(24.0),
               decoration: BoxDecoration(
@@ -108,12 +117,18 @@ class _InterestsScreenState extends State<InterestsScreen> {
               ),
               child: SizedBox(
                 width: double.infinity,
-                height: 56, // Misma altura
+                height: 56,
                 child: FilledButton(
+                  // --- AQUÍ ESTABA EL ERROR: AHORA SÍ NAVEGA ---
                   onPressed: () {
-                    // TODO: Finalizar registro (Ir al Home)
-                    // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const HomeScreen()), (route) => false);
+                    // Navegamos al MainScreen y borramos el historial de registro
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MainScreen()),
+                            (route) => false // Esto impide que vuelvan atrás con el botón del celular
+                    );
                   },
+                  // ---------------------------------------------
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF1A1A1A),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -128,6 +143,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
     );
   }
 
+  // Widget para los Chips seleccionables
   Widget _buildChip(String label) {
     final isSelected = _selectedInterests.contains(label);
     return GestureDetector(
@@ -140,22 +156,21 @@ class _InterestsScreenState extends State<InterestsScreen> {
           }
         });
       },
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF1A1A1A) : const Color(0xFFF9F9F9),
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? Colors.transparent : Colors.transparent), // Opcional: borde
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Aquí puedes poner lógica para cambiar iconos según el interés si deseas
-            Icon(
-              Icons.interests,
-              size: 16,
-              color: isSelected ? Colors.white : Colors.grey,
-            ),
-            const SizedBox(width: 8),
+            if (isSelected) ...[
+              const Icon(Icons.check, size: 16, color: Colors.white),
+              const SizedBox(width: 6),
+            ],
             Text(
               label,
               style: TextStyle(

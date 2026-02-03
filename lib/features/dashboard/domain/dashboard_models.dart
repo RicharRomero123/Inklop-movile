@@ -1,14 +1,14 @@
 class ContentModel {
   final String title;
-  final String thumbnailPath; // Usaremos colores o url simuladas
-  final String platformIcon;  // tiktok o instagram
+  final String thumbnailPath;
+  final String platformIcon;
   final String caption;
   final String views;
   final String likes;
   final String comments;
   final String shares;
   final String earnings;
-  final String status; // Aceptado, Pendiente, Denegado
+  final String status;
 
   ContentModel({
     required this.title,

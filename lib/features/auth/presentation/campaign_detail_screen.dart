@@ -14,8 +14,8 @@ class CampaignDetailScreen extends StatefulWidget {
 }
 
 class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
-  int _selectedTab = 0;   // 0: Información, 1: Recursos
-  bool _isJoined = false; // Estado para cambiar los botones inferiores
+  int _selectedTab = 0; // 0: Información, 1: Recursos
+  bool _isJoined = false;
 
   @override
   Widget build(BuildContext context) {
@@ -23,198 +23,131 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. SCROLL PRINCIPAL (SLIVERS)
           CustomScrollView(
             slivers: [
-              // HEADER PARALLAX
-              SliverAppBar(
-                expandedHeight: 220.0,
-                floating: false,
+              // 1. HEADER DINÁMICO (Contiene Portada y Logo Sticky)
+              SliverPersistentHeader(
                 pinned: true,
-                backgroundColor: const Color(0xFF2D0052),
-                leading: Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-                actions: [
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
-                    child: IconButton(
-                      icon: const Icon(Icons.chat_bubble_outline, size: 20, color: Colors.white),
-                      onPressed: () {
-                        // NAVEGAR AL CHAT
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ChatListScreen(campaignTitle: widget.campaign.title),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF2D0052), Color(0xFF15002B)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                    child: Center(
-                      child: Opacity(
-                        opacity: 0.1,
-                        child: Text(
-                          widget.campaign.brandName.toUpperCase(),
-                          style: const TextStyle(fontSize: 60, fontWeight: FontWeight.w900, color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ),
+                delegate: _CampaignHeaderDelegate(
+                  campaign: widget.campaign,
+                  expandedHeight: 220,
                 ),
               ),
 
-              // CONTENIDO DEL CUERPO
+              // 2. CUERPO DE LA CAMPAÑA
               SliverToBoxAdapter(
-                child: Transform.translate(
-                  offset: const Offset(0, -20),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(32),
-                        topRight: Radius.circular(32),
+                child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 50), // Espacio para que el título no quede bajo el logo
+
+                      // Título y Marca
+                      Text(
+                        widget.campaign.title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        // LOGO FLOTANTE
-                        Transform.translate(
-                          offset: const Offset(0, -45),
-                          child: Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              color: Color(widget.campaign.colorCode),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 4),
-                              boxShadow: [
-                                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                widget.campaign.brandName[0],
-                                style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white),
-                              ),
-                            ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.campaign.brandName,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
                           ),
-                        ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.verified, size: 18, color: Colors.blue),
+                        ],
+                      ),
 
-                        // DATOS DE LA CAMPAÑA
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Column(
-                            children: [
-                              Text(widget.campaign.title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 4),
-                              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                Text(widget.campaign.brandName, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                const SizedBox(width: 4),
-                                const Icon(Icons.verified, size: 16, color: Colors.black),
-                              ]),
+                      const SizedBox(height: 32),
 
-                              const SizedBox(height: 24),
-                              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                _buildMiniDetail('Tipo', widget.campaign.type),
-                                _buildMiniDetail('Plataformas', '', isIcon: true),
-                                _buildMiniDetail('Fecha Límite', widget.campaign.deadline),
-                              ]),
+                      // Fila de Detalles Rápidos
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildMiniDetail('Tipo', widget.campaign.type),
+                          _buildMiniDetail('Plataformas', '', isIcon: true),
+                          _buildMiniDetail('Fecha Límite', widget.campaign.deadline),
+                        ],
+                      ),
 
-                              const SizedBox(height: 24),
+                      const SizedBox(height: 32),
 
-                              // Barra de Progreso
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(color: const Color(0xFFFAFAFA), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200)),
-                                child: Column(children: [
-                                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                    const Text('Progreso de Campaña ⚡', style: TextStyle(fontWeight: FontWeight.w600)),
-                                    Text('${(widget.campaign.paidAmount / widget.campaign.totalBudget * 100).toInt()}%', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  ]),
-                                  const SizedBox(height: 10),
-                                  ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: widget.campaign.paidAmount / widget.campaign.totalBudget, minHeight: 8, backgroundColor: Colors.grey.shade200, color: const Color(0xFF5E17EB))),
-                                  const SizedBox(height: 8),
-                                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                    Text('S/${widget.campaign.paidAmount}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                    Text('de S/${widget.campaign.totalBudget}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                  ]),
-                                ]),
-                              ),
+                      // Barra de Progreso
+                      _buildProgressBar(),
 
-                              const SizedBox(height: 24),
+                      const SizedBox(height: 40),
 
-                              // TABS
-                              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                _buildTabButton('Información', 0),
-                                const SizedBox(width: 20),
-                                _buildTabButton('Recursos', 1),
-                              ]),
-                              const SizedBox(height: 24),
+                      // Selector de Pestañas (Tabs)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildTabButton('Información', 0),
+                          const SizedBox(width: 40),
+                          _buildTabButton('Recursos', 1),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
 
-                              // CONTENIDO DINÁMICO
-                              _selectedTab == 0 ? _buildInfoTab() : _buildResourcesTab(),
+                      // Contenido Dinámico según Tab
+                      _selectedTab == 0 ? _buildInfoTab() : _buildResourcesTab(),
 
-                              const SizedBox(height: 120), // Espacio final
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      const SizedBox(height: 140), // Margen inferior para el botón
+                    ],
                   ),
                 ),
               ),
             ],
           ),
 
-          // 2. BOTÓN INFERIOR (Sticky)
+          // 3. BOTÓN INFERIOR STICKY
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Colors.white, Colors.white, Colors.white.withOpacity(0.0)],
-                  stops: const [0.0, 0.7, 1.0],
-                ),
-              ),
-              child: _buildBottomButton(),
-            ),
+            child: _buildStickyBottomButton(),
           ),
         ],
       ),
     );
   }
 
-  // --- WIDGETS DE UI ---
+  // --- COMPONENTES DE UI ---
 
-  Widget _buildMiniDetail(String label, String value, {bool isIcon = false}) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-      const SizedBox(height: 4),
-      if (isIcon) const Row(children: [Icon(Icons.tiktok, size: 18), SizedBox(width: 4), Icon(Icons.camera_alt, size: 18)])
-      else Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-    ]);
+  Widget _buildProgressBar() {
+    double progress = (widget.campaign.paidAmount / widget.campaign.totalBudget).clamp(0.0, 1.0);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(children: [
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          const Text('Progreso de Campaña ⚡', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          Text('${(progress * 100).toInt()}%', style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF5E17EB))),
+        ]),
+        const SizedBox(height: 12),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: LinearProgressIndicator(
+            value: progress,
+            minHeight: 10,
+            backgroundColor: Colors.grey.shade200,
+            color: const Color(0xFF5E17EB),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text('S/${widget.campaign.paidAmount}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          Text('meta: S/${widget.campaign.totalBudget}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+        ]),
+      ]),
+    );
   }
 
   Widget _buildTabButton(String text, int index) {
@@ -223,71 +156,82 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
       onTap: () => setState(() => _selectedTab = index),
       child: Column(children: [
         Text(text, style: TextStyle(fontSize: 16, fontWeight: isSelected ? FontWeight.bold : FontWeight.w500, color: isSelected ? Colors.black : Colors.grey)),
-        const SizedBox(height: 6),
-        Container(width: isSelected ? 40 : 0, height: 2, color: Colors.black),
+        const SizedBox(height: 8),
+        AnimatedContainer(duration: const Duration(milliseconds: 200), width: isSelected ? 30 : 0, height: 3, color: const Color(0xFF5E17EB)),
       ]),
     );
   }
 
-  // --- PESTAÑA INFORMACIÓN ---
+  Widget _buildMiniDetail(String label, String value, {bool isIcon = false}) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500)),
+      const SizedBox(height: 6),
+      if (isIcon) const Row(children: [Icon(Icons.tiktok, size: 18), SizedBox(width: 8), Icon(Icons.camera_alt, size: 18)])
+      else Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+    ]);
+  }
+
+  // --- CONTENIDO DE PESTAÑAS ---
+
   Widget _buildInfoTab() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text('Descripción', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-      const SizedBox(height: 8),
-      Text(widget.campaign.description, style: TextStyle(color: Colors.grey.shade700, height: 1.5, fontSize: 14)),
+      const Text('Descripción', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+      const SizedBox(height: 12),
+      Text(widget.campaign.description, style: TextStyle(color: Colors.grey.shade700, height: 1.6, fontSize: 15)),
       const SizedBox(height: 24),
       Row(children: [
-        Expanded(child: _buildDarkCard('Pago Máximo', widget.campaign.maxPay, '=100K vistas')),
+        Expanded(child: _buildDarkCard('Pago Máximo', widget.campaign.maxPay, '≈ 100K vistas')),
         const SizedBox(width: 12),
-        Expanded(child: _buildDarkCard('Recompensa', widget.campaign.reward, '/1K vistas')),
+        Expanded(child: _buildDarkCard('Recompensa', widget.campaign.reward, '/ 1K vistas')),
       ]),
-      const SizedBox(height: 24),
-      const Text('Pautas de Contenido', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-      const SizedBox(height: 12),
-      ...widget.campaign.requirements.map((req) => Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(12)),
+      const SizedBox(height: 32),
+      const Text('Pautas de Contenido', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+      const SizedBox(height: 16),
+      ...widget.campaign.requirements.map((req) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Icon(Icons.check_circle, size: 18, color: Colors.black),
-          const SizedBox(width: 10),
-          Expanded(child: Text(req, style: const TextStyle(fontSize: 13, height: 1.3))),
+          const Icon(Icons.check_circle_outline, size: 20, color: Colors.green),
+          const SizedBox(width: 12),
+          Expanded(child: Text(req, style: const TextStyle(fontSize: 14, height: 1.4))),
         ]),
       )),
       const SizedBox(height: 20),
-
-      // CARD IA
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF3F3F3),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Guiones Inteligentes', style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
-                Text('Crea guiones impactantes con IA', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              ],
-            ),
-            FilledButton.icon(
-              onPressed: () {
-                // NAVEGAR A IA
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const GeneratingScriptScreen()));
-              },
-              icon: const Icon(Icons.auto_awesome, size: 14, color: Colors.white),
-              label: const Text('Crear Guión', style: TextStyle(fontSize: 12)),
-              style: FilledButton.styleFrom(backgroundColor: Colors.black, foregroundColor: Colors.white),
-            ),
-          ],
-        ),
-      ),
+      _buildAIButton(),
     ]);
+  }
+
+  Widget _buildResourcesTab() {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('Archivos Adicionales', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+      const SizedBox(height: 16),
+      _buildResourceItem(Icons.picture_as_pdf, 'Instrucciones de Contenido', '2.4 MB'),
+      const SizedBox(height: 32),
+      const Text('Redes Sociales', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+      const SizedBox(height: 16),
+      ...widget.campaign.socialLinks.map((link) => _buildSocialItem(link)),
+    ]);
+  }
+
+  // --- COMPONENTES ATÓMICOS ---
+
+  Widget _buildAIButton() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: const Color(0xFFF3F3F3), borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.black12)),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Guiones Inteligentes', style: TextStyle(fontWeight: FontWeight.bold)),
+          SizedBox(height: 4),
+          Text('Crea guiones impactantes con IA', style: TextStyle(fontSize: 12, color: Colors.grey)),
+        ]),
+        FilledButton.icon(
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GeneratingScriptScreen())),
+          icon: const Icon(Icons.auto_awesome, size: 14),
+          label: const Text('Crear Guión', style: TextStyle(fontSize: 12)),
+          style: FilledButton.styleFrom(backgroundColor: Colors.black),
+        ),
+      ]),
+    );
   }
 
   Widget _buildDarkCard(String label, String value, String sub) {
@@ -298,66 +242,69 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
         Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
         const SizedBox(height: 6),
         Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 2),
         Text(sub, style: const TextStyle(color: Colors.white38, fontSize: 10)),
       ]),
     );
   }
 
-  // --- PESTAÑA RECURSOS ---
-  Widget _buildResourcesTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Archivos Adicionales', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        const SizedBox(height: 12),
-        GestureDetector(
-          onTap: () => _showInstructionsDialog(context),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF333333), Color(0xFF1A1A1A)]),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.description, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(child: Text('Instrucciones de Contenido', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600))),
-                Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        const Text('Redes Sociales', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        const SizedBox(height: 12),
-        ...widget.campaign.socialLinks.map((link) {
-          bool isTikTok = link.contains('tiktok') || !link.contains('instagram');
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(color: const Color(0xFF1A1A1A), borderRadius: BorderRadius.circular(30)),
-              child: Row(
-                children: [
-                  Icon(isTikTok ? Icons.tiktok : Icons.camera_alt, color: Colors.white, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(widget.campaign.brandName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text(link, style: const TextStyle(color: Colors.grey, fontSize: 12), overflow: TextOverflow.ellipsis),
-                  ])),
-                  const Icon(Icons.arrow_outward, color: Colors.white54, size: 18),
-                ],
-              ),
-            ),
-          );
-        }),
-      ],
+  Widget _buildResourceItem(IconData icon, String title, String size) {
+    return GestureDetector(
+      onTap: () => _showInstructionsDialog(context),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(16)),
+        child: Row(children: [
+          Icon(icon, color: Colors.black87),
+          const SizedBox(width: 16),
+          Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600))),
+          const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+        ]),
+      ),
     );
   }
 
-  // --- POPUP INSTRUCCIONES ---
+  Widget _buildSocialItem(String link) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: const Color(0xFF1A1A1A), borderRadius: BorderRadius.circular(30)),
+      child: Row(children: [
+        Icon(link.contains('tiktok') ? Icons.tiktok : Icons.facebook, color: Colors.white, size: 20),
+        const SizedBox(width: 12),
+        Expanded(child: Text(link, style: const TextStyle(color: Colors.white, fontSize: 13), overflow: TextOverflow.ellipsis)),
+        const Icon(Icons.arrow_outward, color: Colors.white54, size: 18),
+      ]),
+    );
+  }
+
+  Widget _buildStickyBottomButton() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 34),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [Colors.white, Colors.white.withOpacity(0.9), Colors.white.withOpacity(0.0)],
+          stops: const [0.0, 0.8, 1.0],
+        ),
+      ),
+      child: !_isJoined
+          ? SizedBox(
+        width: double.infinity, height: 58,
+        child: FilledButton(
+          onPressed: () => setState(() => _isJoined = true),
+          style: FilledButton.styleFrom(backgroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+          child: const Text('Unirme a la Campaña', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        ),
+      )
+          : Row(children: [
+        Expanded(child: SizedBox(height: 58, child: OutlinedButton(onPressed: () {}, style: OutlinedButton.styleFrom(side: const BorderSide(width: 2), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))), child: const Text('Mis Envíos', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold))))),
+        const SizedBox(width: 16),
+        Expanded(child: SizedBox(height: 58, child: FilledButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SendVideoScreen())), style: FilledButton.styleFrom(backgroundColor: const Color(0xFF1A1A1A), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))), child: const Text('Enviar Video', style: TextStyle(fontWeight: FontWeight.bold))))),
+      ]),
+    );
+  }
+
   void _showInstructionsDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -365,37 +312,29 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
         return Dialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          insetPadding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Row(children: [
-                  Container(padding: const EdgeInsets.all(10), decoration: const BoxDecoration(color: Color(0xFF2D2D2D), shape: BoxShape.circle), child: const Icon(Icons.description, color: Colors.white, size: 24)),
+                  const Icon(Icons.description, size: 24),
                   const SizedBox(width: 12),
-                  const Expanded(child: Text('Instrucciones de Contenido', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+                  const Expanded(child: Text('Instrucciones', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
                 ]),
               ),
               const Divider(height: 1),
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
-                    _InstructionSection(title: '1. Objetivo del contenido', content: 'Dar a conocer Inklop como la plataforma donde creadores pueden monetizar su contenido...'),
-                    _InstructionSection(title: '2. Idea central', content: '"Inklop te conecta con marcas que pagan por tu contenido. Monetiza sin complicarte."'),
-                    _InstructionSection(title: '3. Pilares', content: '1. Fácil de usar\n2. Oportunidades reales\n3. Rapidez y transparencia'),
-                  ]),
-                ),
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Text('Aquí van las instrucciones detalladas para tu contenido en Inklop.'),
               ),
-              const Divider(height: 1),
               Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: Row(children: [
-                  Expanded(child: OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.copy, size: 18, color: Colors.black), label: const Text('Copiar', style: TextStyle(color: Colors.black)), style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.black), padding: const EdgeInsets.symmetric(vertical: 12)))),
-                  const SizedBox(width: 12),
-                  Expanded(child: FilledButton(onPressed: () => Navigator.pop(context), style: FilledButton.styleFrom(backgroundColor: const Color(0xFF1A1A1A), padding: const EdgeInsets.symmetric(vertical: 12)), child: const Text('Entendido'))),
-                ]),
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: FilledButton.styleFrom(backgroundColor: Colors.black, minimumSize: const Size(double.infinity, 50)),
+                  child: const Text('Entendido'),
+                ),
               ),
             ],
           ),
@@ -403,34 +342,93 @@ class _CampaignDetailScreenState extends State<CampaignDetailScreen> {
       },
     );
   }
+}
 
-  // --- BOTONES INFERIORES ---
-  Widget _buildBottomButton() {
-    if (!_isJoined) {
-      return SizedBox(
-        width: double.infinity, height: 56,
-        child: FilledButton(
-          onPressed: () {
-            setState(() { _isJoined = true; });
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Te has unido a la campaña!')));
-          },
-          style: FilledButton.styleFrom(backgroundColor: Colors.white, side: const BorderSide(color: Colors.black, width: 2), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
-          child: const Text('Unirme a la Campaña', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+// --- DELEGATE PARA EL HEADER ANIMADO (LOGO STICKY) ---
+class _CampaignHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final CampaignModel campaign;
+  final double expandedHeight;
+
+  _CampaignHeaderDelegate({required this.campaign, required this.expandedHeight});
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final double progress = shrinkOffset / (maxExtent - minExtent);
+    final double logoSize = (1 - progress).clamp(0.6, 1.0) * 100;
+
+    // El logo baja pero se queda sticky a 70px del top cuando colapsa
+    final double logoYPosition = (expandedHeight - 50) - shrinkOffset;
+    final double finalLogoY = logoYPosition > 70 ? logoYPosition : 70;
+
+    return Stack(
+      fit: StackFit.expand,
+      clipBehavior: Clip.none,
+      children: [
+        // Fondo con Gradiente
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF2D0052), Color(0xFF15002B)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: Center(
+            child: Opacity(
+              opacity: (1 - progress).clamp(0, 0.15),
+              child: Text(campaign.brandName.toUpperCase(), style: const TextStyle(fontSize: 70, fontWeight: FontWeight.w900, color: Colors.white)),
+            ),
+          ),
         ),
-      );
-    } else {
-      return Row(children: [
-        Expanded(child: SizedBox(height: 56, child: FilledButton(onPressed: () {}, style: FilledButton.styleFrom(backgroundColor: Colors.white, side: const BorderSide(color: Colors.black), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))), child: const Text('Mis Envíos', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold))))),
-        const SizedBox(width: 16),
-        // BOTÓN ENVIAR VIDEO CONECTADO
-        Expanded(child: SizedBox(height: 56, child: FilledButton(
+
+        // LOGO STICKY
+        Positioned(
+          top: finalLogoY,
+          left: (MediaQuery.of(context).size.width / 2) - (logoSize / 2),
+          child: Container(
+            width: logoSize,
+            height: logoSize,
+            decoration: BoxDecoration(
+              color: Color(campaign.colorCode),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 5),
+              boxShadow: [const BoxShadow(color: Colors.black26, blurRadius: 12, offset: Offset(0, 4))],
+            ),
+            child: Center(
+              child: Text(
+                campaign.brandName[0].toUpperCase(),
+                style: TextStyle(fontSize: logoSize * 0.45, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+
+        // Botones de Navegación
+        Positioned(
+          top: 45,
+          left: 16,
+          child: IconButton(
+            icon: const CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black)),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        Positioned(
+          top: 45,
+          right: 16,
+          child: IconButton(
+            icon: const CircleAvatar(backgroundColor: Colors.white24, child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.white)),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const SendVideoScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => ChatListScreen(campaignTitle: campaign.title)));
             },
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF1A1A1A), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))), child: const Text('Enviar Video', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))))),
-      ]);
-    }
+          ),
+        ),
+      ],
+    );
   }
+
+  @override double get maxExtent => expandedHeight;
+  @override double get minExtent => 130;
+  @override bool shouldRebuild(covariant _CampaignHeaderDelegate oldDelegate) => true;
 }
 
 class _InstructionSection extends StatelessWidget {
