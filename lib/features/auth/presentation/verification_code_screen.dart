@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'birth_date_screen.dart'; // Importamos la siguiente pantalla
+import 'birth_date_screen.dart'; //
 
 class VerificationCodeScreen extends StatefulWidget {
   const VerificationCodeScreen({super.key});
@@ -10,17 +10,42 @@ class VerificationCodeScreen extends StatefulWidget {
 
 class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
   final TextEditingController _codeController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // Escuchamos el foco para activar el cambio de color del borde
+    _focusNode.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    bool isComplete = _codeController.text.length == 6; //
+    // Determinamos si el borde debe estar resaltado (si tiene foco o ya tiene texto)
+    bool isActive = _focusNode.hasFocus || _codeController.text.isNotEmpty;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-          onPressed: () => Navigator.pop(context),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
+          child: CircleAvatar(
+            backgroundColor: const Color(0xFFF8F8F8),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 16),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
         ),
       ),
       body: SafeArea(
@@ -28,57 +53,98 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
-              // 1. Icono Header
+              const SizedBox(height: 10),
+              // 1. Icono Header Circular
               Center(
                 child: Container(
-                  height: 60,
-                  width: 60,
-                  padding: const EdgeInsets.all(12),
+                  height: 64,
+                  width: 64,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFF3F3F3),
+                    color: Color(0xFFF8F8F8),
                     shape: BoxShape.circle,
                   ),
-                  child: Image.asset('assets/images/icon_otp_header.png'),
+                  child: Center(
+                    child: Image.asset(
+                      'assets/images/icon_otp_header.png', //
+                      height: 32,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // 2. Títulos
               const Text(
                 'Ingresa el Código de Verificación',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'Enviamos un código de verificación a tu email\ncesarmesia.g@gmail.com',
+              const SizedBox(height: 10),
+
+              // Texto de ayuda con el correo resaltado en negro
+              RichText(
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                text: const TextSpan(
+                  style: TextStyle(fontSize: 15, color: Colors.grey, height: 1.4),
+                  children: [
+                    TextSpan(text: 'Enviamos un código de verificación a tu email\n'),
+                    TextSpan(
+                      text: 'cesarmesia.g@gmail.com', // El correo ahora es más negro y fuerte
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 40),
 
-              // 3. Input de Código (Estilizado como la imagen)
-              Container(
-                width: 250,
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F3F3),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: TextField(
-                  controller: _codeController,
-                  textAlign: TextAlign.center,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6, // Máximo 6 dígitos
-                  style: const TextStyle(fontSize: 24, letterSpacing: 8, fontWeight: FontWeight.bold),
-                  decoration: const InputDecoration(
-                    hintText: '- - - - - -',
-                    border: InputBorder.none,
-                    counterText: "", // Oculta el contador de caracteres
+              // 3. Input de Código (Diseño Píldora con borde dinámico)
+              Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 260, // Ligeramente más ancho para separar los guiones
+                  height: 68,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7F7F7),
+                    borderRadius: BorderRadius.circular(35),
+                    border: Border.all(
+                      // El borde se oscurece solo si escribes o haces clic
+                      color: isActive ? const Color(0xFFE0E0E0) : const Color(0xFFF3F3F3),
+                      width: 1.5,
+                    ),
                   ),
-                  onChanged: (value) {
-                    setState(() {}); // Para actualizar el botón
-                  },
+                  child: TextField(
+                    controller: _codeController,
+                    focusNode: _focusNode,
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6, //
+                    style: const TextStyle(
+                      fontSize: 28,
+                      letterSpacing: 14, // Guiones y números más separados
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: '------',
+                      hintStyle: TextStyle(
+                        color: Color(0xFFADADAD),
+                        letterSpacing: 14,
+                        fontWeight: FontWeight.w300,
+                      ),
+                      border: InputBorder.none,
+                      counterText: "", //
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    onChanged: (value) => setState(() {}),
+                  ),
                 ),
               ),
 
@@ -89,23 +155,23 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
                 width: double.infinity,
                 height: 56,
                 child: FilledButton(
-                  onPressed: _codeController.text.length == 6
-                      ? () {
-                    // Navegar a Fecha de Nacimiento
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const BirthDateScreen()));
-                  }
+                  onPressed: isComplete
+                      ? () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const BirthDateScreen()),
+                  )
                       : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A1A1A),
-                    disabledBackgroundColor: const Color(0xFFF3F3F3), // Gris si está deshabilitado
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    backgroundColor: const Color(0xFF1A1A1A), //
+                    disabledBackgroundColor: const Color(0xFFF1F1F1),
+                    shape: const StadiumBorder(),
                   ),
                   child: Text(
-                    'Verificar',
+                    'Verificar', //
                     style: TextStyle(
-                        color: _codeController.text.length == 6 ? Colors.white : Colors.grey,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600
+                      color: isComplete ? Colors.white : const Color(0xFFADADAD),
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),

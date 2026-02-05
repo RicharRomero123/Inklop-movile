@@ -7,20 +7,18 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Ya no necesitamos el backgroundColor plano porque usaremos un Container con gradiente
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          // --- AQUÍ ESTÁ EL DEGRADADO ---
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+          gradient: RadialGradient(
+            center: Alignment.center,
+            radius: 1.1,
             colors: [
-              Color(0xFF372065), // Morado vibrante (arriba)
-              Color(0xFF9D5CDA), // Morado/Magenta (abajo)
-              // Puedes cambiar estos códigos HEX por los exactos de tu diseño
+              Color(0xFF2B1255),
+              Color(0xFF0D021D),
             ],
+            stops: [0.2, 1.0],
           ),
         ),
         child: SafeArea(
@@ -30,35 +28,45 @@ class WelcomeScreen extends StatelessWidget {
               children: [
                 const Spacer(flex: 1),
 
-                // Imagen Hero (Asegúrate que sea una imagen con fondo transparente/PNG)
+                // Imagen Hero
                 Image.asset(
                   'assets/images/welcome_hero.png',
-                  height: 350,
+                  height: MediaQuery.of(context).size.height * 0.45,
                   fit: BoxFit.contain,
                 ),
 
                 const Spacer(flex: 1),
 
                 // Logo Inklop
-                // Si tu logo es negro, quizás necesites aplicarle color blanco:
                 Image.asset(
                   'assets/images/logo_inklop.png',
-                  height: 40,
-                  // color: Colors.white, // <-- DESCOMENTA ESTO SI TU LOGO ES NEGRO
+                  height: 35,
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
-                // Texto Principal
-                const Text(
-                  'Where patoEveryone\nWins_',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white, // <-- CAMBIADO A BLANCO PARA CONTRASTE
-                    height: 1.2,
-                    fontFamily: 'Segoe UI',
+                // --- TEXTO CON DEGRADADO ---
+                ShaderMask(
+                  blendMode: BlendMode.srcIn,
+                  shaderCallback: (bounds) => const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white,      // Parte superior blanca
+                      Color(0xFF9D5CDA), // Parte inferior morada/magenta
+                    ],
+                  ).createShader(
+                    Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                  ),
+                  child: const Text(
+                    'Where Everyone\nWins_',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      height: 1.1,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                 ),
 
@@ -67,7 +75,7 @@ class WelcomeScreen extends StatelessWidget {
                 // Botón "Empezar"
                 SizedBox(
                   width: double.infinity,
-                  height: 56,
+                  height: 60,
                   child: FilledButton(
                     onPressed: () {
                       showModalBottomSheet(
@@ -78,18 +86,18 @@ class WelcomeScreen extends StatelessWidget {
                       );
                     },
                     style: FilledButton.styleFrom(
-                      // Puedes mantenerlo negro o cambiarlo a blanco si prefieres más contraste
-                      backgroundColor: const Color(0xFF1A1A1A),
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(35),
                       ),
+                      elevation: 5,
                     ),
                     child: const Text(
                       'Empezar',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
