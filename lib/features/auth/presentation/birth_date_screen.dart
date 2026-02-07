@@ -11,42 +11,48 @@ class BirthDateScreen extends StatefulWidget {
 
 class _BirthDateScreenState extends State<BirthDateScreen> {
   final _dateController = TextEditingController();
+  final FocusNode _focusNode = FocusNode(); // Para el borde dinámico
   bool _isDateValid = false;
 
-  // Lógica de validación exacta para DD/MM/AAAA
+  @override
+  void initState() {
+    super.initState();
+    // Escuchamos el foco para redibujar el borde
+    _focusNode.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
   void _validateDate(String value) {
-    // Debe tener exactamente 10 caracteres (DD/MM/AAAA)
-    if (value.length != 10) {
+    // La longitud ahora es 14 debido a los espacios "DD / MM / AAAA"
+    if (value.length != 14) {
       if (_isDateValid) setState(() => _isDateValid = false);
       return;
     }
 
     try {
-      List<String> parts = value.split('/');
-      if (parts.length != 3) throw Exception();
-
+      // Limpiamos espacios para validar los números puros
+      List<String> parts = value.replaceAll(' ', '').split('/');
       int day = int.parse(parts[0]);
       int month = int.parse(parts[1]);
       int year = int.parse(parts[2]);
 
       final now = DateTime.now();
-
-      // Validaciones lógicas
-      if (year < 1900 || year > now.year - 10) throw Exception(); // Al menos 10 años? (Opcional)
+      if (year < 1900 || year > now.year) throw Exception();
       if (month < 1 || month > 12) throw Exception();
 
-      // Días por mes exactos
       int daysInMonth(int m, int y) {
-        if (m == 2) {
-          // Año bisiesto
-          return (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)) ? 29 : 28;
-        }
+        if (m == 2) return (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)) ? 29 : 28;
         const days = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-        return days[m]; // Fallback simple para meses normales
+        return days[m];
       }
 
       if (day < 1 || day > daysInMonth(month, year)) throw Exception();
-
       setState(() => _isDateValid = true);
     } catch (e) {
       setState(() => _isDateValid = false);
@@ -55,14 +61,23 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // El borde se activa si tiene foco o ya tiene texto
+    bool isActive = _focusNode.hasFocus || _dateController.text.isNotEmpty;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-          onPressed: () => Navigator.pop(context),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
+          child: CircleAvatar(
+            backgroundColor: const Color(0xFFF8F8F8),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 16),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
         ),
       ),
       body: SafeArea(
@@ -70,77 +85,86 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
-              // 1. Icono Pastel
+              const SizedBox(height: 10),
+              // 1. Icono Pastel Header
               Center(
                 child: Container(
-                  height: 60,
-                  width: 60,
-                  padding: const EdgeInsets.all(12),
+                  height: 64,
+                  width: 64,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFF3F3F3),
+                    color: Color(0xFFF8F8F8),
                     shape: BoxShape.circle,
                   ),
-                  // Cambia el asset si no lo tienes
-                  child: Image.asset('assets/images/icon_cake_header.png', errorBuilder: (c,o,s) => const Icon(Icons.cake, color: Colors.black)),
+                  child: Center(
+                    child: Image.asset(
+                      'assets/images/icon_cake_header.png',
+                      height: 32,
+                      errorBuilder: (c, o, s) => const Icon(Icons.cake, color: Colors.black),
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // 2. Títulos
               const Text(
                 'Ingresa tu fecha de nacimiento',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               const Text(
                 'Para verificar tu edad, por favor ingresa la fecha de nacimiento',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(fontSize: 15, color: Colors.grey, height: 1.4),
               ),
               const SizedBox(height: 40),
 
-              // 3. Input Fecha AUTOMATIZADO
-              Container(
-                width: 250,
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                decoration: BoxDecoration(
-                    color: const Color(0xFFF3F3F3),
-                    borderRadius: BorderRadius.circular(30),
+              // 3. Input Fecha (Mismo tamaño y formato que OTP)
+              Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 280, // Ancho suficiente para DD / MM / AAAA
+                  height: 68,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7F7F7),
+                    borderRadius: BorderRadius.circular(35),
                     border: Border.all(
-                        color: _dateController.text.length == 10 && !_isDateValid
-                            ? Colors.red
-                            : Colors.transparent
-                    )
-                ),
-                child: TextField(
-                  controller: _dateController,
-                  textAlign: TextAlign.center,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                  // Solo permitimos 10 caracteres (DD/MM/AAAA)
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly, // Solo deja pasar números
-                    LengthLimitingTextInputFormatter(8),    // Máximo 8 números (sin contar los /)
-                    BirthDateInputFormatter(),              // <--- MAGIA AQUÍ
-                  ],
-                  decoration: const InputDecoration(
-                    hintText: 'DD/MM/AAAA', // Formato visual sugerido
-                    hintStyle: TextStyle(color: Colors.grey, letterSpacing: 1.5),
-                    border: InputBorder.none,
-                    counterText: "",
+                      color: isActive ? const Color(0xFFE0E0E0) : const Color(0xFFF3F3F3),
+                      width: 1.5,
+                    ),
                   ),
-                  onChanged: (value) {
-                    _validateDate(value);
-                  },
+                  child: TextField(
+                    controller: _dateController,
+                    focusNode: _focusNode,
+                    textAlign: TextAlign.center,
+                    textAlignVertical: TextAlignVertical.center, // Centrado vertical
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(
+                      fontSize: 22, // Un poco más pequeño que OTP para que quepa bien
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      height: 1.0,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(8),
+                      BirthDateInputFormatter(),
+                    ],
+                    decoration: const InputDecoration(
+                      hintText: 'DD / MM / AAAA',
+                      hintStyle: TextStyle(
+                        color: Color(0xFFADADAD),
+                        fontWeight: FontWeight.normal,
+                        letterSpacing: 0,
+                      ),
+                      border: InputBorder.none,
+                      counterText: "",
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    onChanged: _validateDate,
+                  ),
                 ),
               ),
-
-              if (_dateController.text.length == 10 && !_isDateValid)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text("Fecha inválida", style: TextStyle(color: Colors.red, fontSize: 12)),
-                ),
 
               const Spacer(),
 
@@ -150,22 +174,19 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
                 height: 56,
                 child: FilledButton(
                   onPressed: _isDateValid
-                      ? () {
-                    // Navegación
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const CreatorProfileScreen()));
-                  }
+                      ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreatorProfileScreen()))
                       : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF1A1A1A),
-                    disabledBackgroundColor: const Color(0xFFF3F3F3),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    disabledBackgroundColor: const Color(0xFFF1F1F1),
+                    shape: const StadiumBorder(),
                   ),
                   child: Text(
                     'Continuar',
                     style: TextStyle(
-                      color: _isDateValid ? Colors.white : Colors.grey,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      color: _isDateValid ? Colors.white : const Color(0xFFADADAD),
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -179,40 +200,25 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
   }
 }
 
-// -------------------------------------------------------------------
-// CLASE FORMATTER ESTRICTO: DD/MM/AAAA
-// -------------------------------------------------------------------
 class BirthDateInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    // 1. Obtenemos solo los números del nuevo texto
-    // (Gracias al FilteringTextInputFormatter.digitsOnly previo, newValue ya debería ser solo números,
-    // pero nos aseguramos por si acaso al reconstruir).
     final newText = newValue.text;
-
-    // Si estamos borrando, permitimos borrar normal.
-    // La magia es reconstruir la cadena desde cero con los números que quedan.
-
-    // Buffer para construir la nueva cadena con /
     var buffer = StringBuffer();
 
     for (int i = 0; i < newText.length; i++) {
       buffer.write(newText[i]);
       var nonZeroIndex = i + 1;
 
-      // Si llegamos al 2do dígito (DD) y no es el final, agregamos /
+      // Agregamos " / " con espacios para mejorar el diseño
       if (nonZeroIndex == 2 && nonZeroIndex != newText.length) {
-        buffer.write('/');
-      }
-      // Si llegamos al 4to dígito (MM) y no es el final, agregamos /
-      else if (nonZeroIndex == 4 && nonZeroIndex != newText.length) {
-        buffer.write('/');
+        buffer.write(' / ');
+      } else if (nonZeroIndex == 4 && nonZeroIndex != newText.length) {
+        buffer.write(' / ');
       }
     }
 
     var string = buffer.toString();
-
-    // Retornamos el valor formateado y mantenemos el cursor al final
     return newValue.copyWith(
       text: string,
       selection: TextSelection.collapsed(offset: string.length),

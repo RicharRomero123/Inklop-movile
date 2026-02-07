@@ -15,7 +15,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
   @override
   void initState() {
     super.initState();
-    // Escuchamos el foco para activar el cambio de color del borde
+    // Escuchamos el foco para activar el cambio de color del borde dinámico
     _focusNode.addListener(() => setState(() {}));
   }
 
@@ -28,8 +28,8 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isComplete = _codeController.text.length == 6; //
-    // Determinamos si el borde debe estar resaltado (si tiene foco o ya tiene texto)
+    bool isComplete = _codeController.text.length == 6;
+    // El borde se resalta si el campo tiene el foco o ya tiene contenido
     bool isActive = _focusNode.hasFocus || _codeController.text.isNotEmpty;
 
     return Scaffold(
@@ -65,7 +65,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
                   ),
                   child: Center(
                     child: Image.asset(
-                      'assets/images/icon_otp_header.png', //
+                      'assets/images/icon_otp_header.png',
                       height: 32,
                       fit: BoxFit.contain,
                     ),
@@ -86,7 +86,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
               ),
               const SizedBox(height: 10),
 
-              // Texto de ayuda con el correo resaltado en negro
+              // Correo resaltado en negro y negrita
               RichText(
                 textAlign: TextAlign.center,
                 text: const TextSpan(
@@ -94,7 +94,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
                   children: [
                     TextSpan(text: 'Enviamos un código de verificación a tu email\n'),
                     TextSpan(
-                      text: 'cesarmesia.g@gmail.com', // El correo ahora es más negro y fuerte
+                      text: 'cesarmesia.g@gmail.com',
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
@@ -105,17 +105,17 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
               ),
               const SizedBox(height: 40),
 
-              // 3. Input de Código (Diseño Píldora con borde dinámico)
+              // 3. Input de Código (CORREGIDO Y CENTRADO)
               Center(
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  width: 260, // Ligeramente más ancho para separar los guiones
+                  width: 260,
                   height: 68,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF7F7F7),
                     borderRadius: BorderRadius.circular(35),
                     border: Border.all(
-                      // El borde se oscurece solo si escribes o haces clic
+                      // Borde dinámico según interacción
                       color: isActive ? const Color(0xFFE0E0E0) : const Color(0xFFF3F3F3),
                       width: 1.5,
                     ),
@@ -124,13 +124,15 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
                     controller: _codeController,
                     focusNode: _focusNode,
                     textAlign: TextAlign.center,
+                    textAlignVertical: TextAlignVertical.center, // Centrado vertical
                     keyboardType: TextInputType.number,
-                    maxLength: 6, //
+                    maxLength: 6,
                     style: const TextStyle(
                       fontSize: 28,
-                      letterSpacing: 14, // Guiones y números más separados
+                      letterSpacing: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
+                      height: 1.0, // Elimina espacios internos de la fuente
                     ),
                     decoration: const InputDecoration(
                       hintText: '------',
@@ -140,8 +142,9 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
                         fontWeight: FontWeight.w300,
                       ),
                       border: InputBorder.none,
-                      counterText: "", //
-                      contentPadding: EdgeInsets.zero,
+                      counterText: "",
+                      // El padding compensa el letterSpacing para centrar horizontalmente
+                      contentPadding: EdgeInsets.only(left: 14),
                     ),
                     onChanged: (value) => setState(() {}),
                   ),
@@ -162,12 +165,12 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
                   )
                       : null,
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A1A1A), //
+                    backgroundColor: const Color(0xFF1A1A1A),
                     disabledBackgroundColor: const Color(0xFFF1F1F1),
                     shape: const StadiumBorder(),
                   ),
                   child: Text(
-                    'Verificar', //
+                    'Verificar',
                     style: TextStyle(
                       color: isComplete ? Colors.white : const Color(0xFFADADAD),
                       fontSize: 17,
