@@ -17,6 +17,9 @@ class CampaignModel {
   final List<String> requirements; // Lista de pautas
   final List<String> socialLinks;  // Para la tab Recursos
 
+  // --- CAMPO DE FOTO AGREGADO ---
+  final String photoUrl;      // URL de la imagen de fondo o producto
+
   CampaignModel({
     required this.brandName,
     required this.title,
@@ -27,21 +30,22 @@ class CampaignModel {
     required this.category,
     this.isPopular = false,
     required this.colorCode,
-    // Required nuevos
     required this.description,
     required this.deadline,
     required this.maxPay,
     required this.reward,
     required this.requirements,
     required this.socialLinks,
+    // Requerido en el constructor
+    required this.photoUrl,
   });
 }
 
 // --- DATA FAKE ACTUALIZADA ---
 final List<CampaignModel> fakeCampaigns = [
   CampaignModel(
-    brandName: 'Topitop',
-    title: 'Navidad con Topitop',
+    brandName: 'Interbank',
+    title: 'Interbank Challenge',
     pricePerK: 'S/3.00 / 1k',
     paidAmount: 200.00,
     totalBudget: 5000.00,
@@ -60,8 +64,10 @@ final List<CampaignModel> fakeCampaigns = [
       'Usar el hashtag #NavidadTopitop'
     ],
     socialLinks: ['@topitop_pe', 'www.topitop.pe'],
+    // FOTO: Puedes usar una URL de internet o 'assets/images/tu_imagen.png'
+    photoUrl: 'https://res.cloudinary.com/dod56svuf/image/upload/v1770504195/unnamed_xi9zbd.webp',
   ),
-  // ... Puedes agregar los mismos datos dummy a las otras campañas para que no de error
+
   CampaignModel(
     brandName: 'Kick',
     title: 'Clippers Kick',
@@ -82,7 +88,9 @@ final List<CampaignModel> fakeCampaigns = [
       'Contenido divertido o "fails"',
     ],
     socialLinks: ['@kick_latam'],
+    photoUrl: 'https://res.cloudinary.com/dod56svuf/image/upload/v1770474342/kick_laopvf.png',
   ),
+
   CampaignModel(
     brandName: 'Rokys',
     title: 'Promo Rokys',
@@ -103,5 +111,6 @@ final List<CampaignModel> fakeCampaigns = [
       'Video en formato vertical',
     ],
     socialLinks: ['@rokys_pe'],
+    photoUrl: 'https://res.cloudinary.com/dod56svuf/image/upload/v1770474333/rocky_cypr6s.jpg',
   ),
 ];

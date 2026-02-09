@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:inklop/features/mensages/presentation/messages_screen.dart';
 import 'explore_screen.dart';
 
-// --- IMPORTACIONES DE TUS PANTALLAS ---
+// IMPORTACIONES
 import '../../dashboard/presentation/dashboard_screen.dart';
 import '../../payments/presentation/payments_screen.dart';
-import '../../profile/presentation/profile_screen.dart'; // <--- 1. IMPORTAR PERFIL
+import '../../profile/presentation/profile_screen.dart';
+
+
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -16,42 +19,39 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  // 2. LISTA ACTUALIZADA CON TODAS LAS PANTALLAS REALES
+  // LISTA DE PANTALLAS
   final List<Widget> _screens = [
-    const ExploreScreen(),    // Index 0
-    const DashboardScreen(),  // Index 1
-    const PaymentsScreen(),   // Index 2
-    const ProfileScreen(),    // Index 3 (¡Conectado!)
+    const ExploreScreen(),
+    const MessagesScreen(),   // <--- AQUÍ USAMOS LA PANTALLA REAL
+    const DashboardScreen(),
+    const PaymentsScreen(),
+    const ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Extendemos el cuerpo detrás del navbar para que se vea limpio si hay transparencia
       extendBody: true,
-
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
-
-      // 3. BARRA DE NAVEGACIÓN CON BORDES REDONDEADOS
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(30), // Curva superior izquierda
-            topRight: Radius.circular(30), // Curva superior derecha
+        height: 100,
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF000000), Color(0xFF2D0052)],
           ),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08), // Sombra suave
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
+            BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, -5))
           ],
         ),
-        // Usamos ClipRRect para recortar el BottomNavigationBar real
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(30),
@@ -61,36 +61,53 @@ class _MainScreenState extends State<MainScreen> {
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
             type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: Colors.black,
-            unselectedItemColor: Colors.grey,
-            showUnselectedLabels: true,
-            selectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            unselectedLabelStyle: const TextStyle(fontSize: 12),
+            backgroundColor: Colors.transparent,
             elevation: 0,
-            items: const [
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.white70,
+            selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, height: 1.5),
+            unselectedLabelStyle: const TextStyle(fontSize: 10, height: 1.5),
+            items: [
               BottomNavigationBarItem(
-                icon: Icon(Icons.explore_outlined),
-                activeIcon: Icon(Icons.explore),
+                icon: _buildIcon('assets/images/ic_explore.png', false),
+                activeIcon: _buildIcon('assets/images/ic_explore_filled.png', true),
                 label: 'Explorar',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.show_chart),
+                icon: _buildIcon('assets/images/ic_messages.png', false),
+                activeIcon: _buildIcon('assets/images/ic_messages_filled.png', true),
+                label: 'Mensajes',
+              ),
+              BottomNavigationBarItem(
+                icon: _buildIcon('assets/images/ic_dashboard.png', false),
+                activeIcon: _buildIcon('assets/images/ic_dashboard_filled.png', true),
                 label: 'Dashboard',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.account_balance_wallet_outlined),
-                activeIcon: Icon(Icons.account_balance_wallet),
+                icon: _buildIcon('assets/images/ic_wallet.png', false),
+                activeIcon: _buildIcon('assets/images/ic_wallet_filled.png', true),
                 label: 'Mis Pagos',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person),
+                icon: _buildIcon('assets/images/ic_profile.png', false),
+                activeIcon: _buildIcon('assets/images/ic_profile_filled.png', true),
                 label: 'Mi perfil',
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildIcon(String assetPath, bool isActive) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4.0),
+      child: Image.asset(
+        assetPath,
+        width: 24,
+        height: 24,
+        color: isActive ? Colors.white : Colors.white70,
       ),
     );
   }

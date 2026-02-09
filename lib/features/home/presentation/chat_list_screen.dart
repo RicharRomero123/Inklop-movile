@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'chat_detail_screen.dart'; // Importamos el detalle del chat
+import 'chat_detail_screen.dart';
 
 class ChatListScreen extends StatelessWidget {
   final String campaignTitle;
+  final String campaignImage; // <--- NUEVO CAMPO
 
-  const ChatListScreen({super.key, required this.campaignTitle});
+  const ChatListScreen({
+    super.key,
+    required this.campaignTitle,
+    required this.campaignImage, // <--- REQUERIDO
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,12 +41,18 @@ class ChatListScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Logo de la marca (simulado)
+
+                // --- LOGO DINÁMICO ---
                 Container(
                   width: 48, height: 48,
+                  padding: const EdgeInsets.all(2), // Borde blanco
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-                  child: Image.asset('assets/images/logo_small.png', scale: 2), // O un Icono
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(campaignImage, fit: BoxFit.cover), // Usamos la imagen que llega
+                  ),
                 ),
+
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -53,7 +64,7 @@ class ChatListScreen extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const Text(
-                        'Comunidad',
+                        'Comunidad', // O "Canales disponibles"
                         style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                     ],
@@ -63,7 +74,7 @@ class ChatListScreen extends StatelessWidget {
             ),
           ),
 
-          // 2. LISTA DE CHATS
+          // 2. LISTA DE CANALES DE ESTA CAMPAÑA
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(24),
@@ -71,7 +82,7 @@ class ChatListScreen extends StatelessWidget {
                 _buildChatItem(
                   context,
                   title: 'Anuncios',
-                  subtitle: '@rokys.pe: Hola a todos, por favor seguir...',
+                  subtitle: '@empresa: Hola a todos, por favor seguir...',
                   time: '11:36 hrs',
                   icon: Icons.campaign_outlined,
                   iconBg: const Color(0xFFE8F5E9),
@@ -80,13 +91,12 @@ class ChatListScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 _buildChatItem(
                   context,
-                  title: 'Comunidad Creadores',
-                  subtitle: '@cesar.mesia: Chicos ya conseguí mi prime...',
-                  time: '11:36 hrs',
-                  icon: Icons.forum_outlined, // Icono parecido a la imagen
-                  iconBg: Colors.white,
+                  title: 'Chat General',
+                  subtitle: 'Tú: ¿Cuándo envían el producto?',
+                  time: '10:12 hrs',
+                  icon: Icons.forum_outlined,
+                  iconBg: const Color(0xFFFFF3E0),
                   iconColor: Colors.orange,
-                  isImage: true, // Para simular el logo de Rokys
                 ),
               ],
             ),
@@ -103,7 +113,6 @@ class ChatListScreen extends StatelessWidget {
     required IconData icon,
     required Color iconBg,
     required Color iconColor,
-    bool isImage = false,
   }) {
     return GestureDetector(
       onTap: () {
@@ -115,25 +124,19 @@ class ChatListScreen extends StatelessWidget {
         );
       },
       child: Container(
-        color: Colors.transparent, // Para hacer click en toda el área
+        color: Colors.transparent,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar / Icono
             Container(
               width: 56, height: 56,
               decoration: BoxDecoration(
                 color: iconBg,
                 borderRadius: BorderRadius.circular(16),
-                border: isImage ? Border.all(color: Colors.grey.shade200) : null,
               ),
-              child: isImage
-                  ? const Icon(Icons.people_alt, color: Colors.orange) // Aquí iría una imagen real
-                  : Icon(icon, color: Colors.black87),
+              child: Icon(icon, color: iconColor),
             ),
             const SizedBox(width: 16),
-
-            // Textos
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

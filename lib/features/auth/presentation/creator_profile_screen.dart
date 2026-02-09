@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+// IMPORTANTE: Asegúrate de importar la pantalla de intereses aquí
 import 'interests_screen.dart';
 
 class CreatorProfileScreen extends StatefulWidget {
@@ -9,6 +12,21 @@ class CreatorProfileScreen extends StatefulWidget {
 }
 
 class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
+  // Variable para guardar la foto seleccionada
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
+
+  // Función para abrir la galería
+  Future<void> _pickImage() async {
+    final XFile? returnedImage = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (returnedImage != null) {
+      setState(() {
+        _selectedImage = File(returnedImage.path);
+      });
+    }
+  }
+
   final Map<String, FocusNode> _focusNodes = {
     'username': FocusNode(),
     'nombre': FocusNode(),
@@ -42,6 +60,13 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
     super.dispose();
   }
 
+  // Validar si los campos mínimos están llenos para habilitar el botón (Opcional)
+  bool get _isFormValid {
+    // Puedes ajustar esto según qué campos sean obligatorios
+    return _controllers['username']!.text.isNotEmpty &&
+        _controllers['nombre']!.text.isNotEmpty;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,7 +74,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        toolbarHeight: 50, // Reducimos altura de barra superior
+        toolbarHeight: 50,
         leading: Padding(
           padding: const EdgeInsets.only(left: 16.0),
           child: Center(
@@ -69,17 +94,56 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
-              // 1. Icono de Perfil más compacto
-              Container(
-                height: 70,
-                width: 70,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF8F8F8),
-                  shape: BoxShape.circle,
+
+              // --- FOTO DE PERFIL ---
+              Center(
+                child: GestureDetector(
+                  onTap: _pickImage,
+                  child: Stack(
+                    children: [
+                      Container(
+                        height: 110,
+                        width: 110,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF2F2F2),
+                          shape: BoxShape.circle,
+                          image: _selectedImage != null
+                              ? DecorationImage(
+                            image: FileImage(_selectedImage!),
+                            fit: BoxFit.cover,
+                          )
+                              : null,
+                        ),
+                        child: _selectedImage == null
+                            ? const Icon(
+                          Icons.person,
+                          size: 55,
+                          color: Colors.black,
+                        )
+                            : null,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            height: 36,
+                            width: 36,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE0E0E0),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 3),
+                            ),
+                            child: const Icon(Icons.edit, size: 18, color: Colors.black),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: const Icon(Icons.person, size: 35, color: Colors.black),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
               const Text(
                 'Completa Tu Perfil',
@@ -93,7 +157,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
               ),
               const SizedBox(height: 20),
 
-              // 2. Formulario compacto
+              // --- FORMULARIO ---
               _buildInput(label: 'Nombre de usuario', hint: '@username', keyName: 'username'),
               const SizedBox(height: 12),
 
@@ -117,15 +181,19 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
                 ],
               ),
 
-              const Spacer(), // Empuja el botón al final
+              const Spacer(),
 
-              // 3. Botón de Continuar
+              // --- BOTÓN CONTINUAR ---
               SizedBox(
                 width: double.infinity,
                 height: 54,
                 child: FilledButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const InterestsScreen()));
+                    // Aquí navegamos a la pantalla de intereses
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const InterestsScreen())
+                    );
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: const Color(0xFF1A1A1A),
@@ -176,7 +244,7 @@ class _CreatorProfileScreenState extends State<CreatorProfileScreen> {
           child: TextField(
             controller: controller,
             focusNode: focusNode,
-            maxLines: isBio ? 3 : 1, // Reducido para ahorrar espacio
+            maxLines: isBio ? 3 : 1,
             onChanged: (val) => setState(() {}),
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black),
             decoration: InputDecoration(

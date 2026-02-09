@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'widgets/search_result_item.dart';
+import 'widgets/search_result_item.dart'; // Asegúrate de que esta ruta siga siendo correcta
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -11,11 +11,14 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
 
+  // 0 = Cuentas, 1 = Campañas
+  int _selectedTab = 0;
+
   @override
   void initState() {
     super.initState();
-    // Simula que el usuario ya escribió "Inklop" para mostrar resultados
-    _searchController.text = "Inklop";
+    // Simula búsqueda inicial
+    _searchController.text = "Makeup";
   }
 
   @override
@@ -24,8 +27,11 @@ class _SearchScreenState extends State<SearchScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ===============================================
             // 1. HEADER DE BÚSQUEDA
+            // ===============================================
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
@@ -35,17 +41,18 @@ class _SearchScreenState extends State<SearchScreen> {
                       height: 44,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(color: Colors.black, width: 1), // Borde negro fino
+                        borderRadius: BorderRadius.circular(12), // Bordes un poco menos redondos para parecerse a iOS
+                        border: Border.all(color: Colors.grey.shade300, width: 1),
                       ),
                       child: TextField(
                         controller: _searchController,
-                        autofocus: true, // Abre el teclado automáticamente
+                        textAlignVertical: TextAlignVertical.center,
                         decoration: const InputDecoration(
                           hintText: 'Busca...',
                           prefixIcon: Icon(Icons.search, color: Colors.grey),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 10),
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
                         ),
                       ),
                     ),
@@ -61,41 +68,127 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-            const SizedBox(height: 10),
-
-            // 2. RESULTADOS
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                children: const [
-                  // SECCIÓN: CUENTAS
-                  Text('Cuentas', style: TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500)),
-                  SizedBox(height: 16),
-
-                  SearchResultItem(
-                    title: 'Inklop',
-                    subtitle: '@inklop.pe',
-                    isCampaign: false,
-                  ),
-
-                  SizedBox(height: 24),
-
-                  // SECCIÓN: CAMPAÑAS
-                  Text('Campañas', style: TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500)),
-                  SizedBox(height: 16),
-
-                  SearchResultItem(
-                    title: 'Creadores Inklop',
-                    subtitle: '@inklop.pe',
-                    isCampaign: true,
-                    priceTag: 'S/20 / 1K',
-                  ),
+            // ===============================================
+            // 2. PESTAÑAS (TABS) - CUENTAS | CAMPAÑAS
+            // ===============================================
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+              child: Row(
+                children: [
+                  _buildTabItem(label: "Cuentas", index: 0),
+                  const SizedBox(width: 20),
+                  _buildTabItem(label: "Campañas", index: 1),
                 ],
               ),
+            ),
+
+            // Línea divisoria sutil (opcional, para separar tabs del contenido)
+            Divider(height: 1, color: Colors.grey.shade200),
+
+            // ===============================================
+            // 3. LISTA DE RESULTADOS (CAMBIA SEGÚN EL TAB)
+            // ===============================================
+            Expanded(
+              child: _selectedTab == 0
+                  ? _buildAccountsList()
+                  : _buildCampaignsList(),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  // --- WIDGET PARA CADA PESTAÑA ---
+  Widget _buildTabItem({required String label, required int index}) {
+    final bool isSelected = _selectedTab == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedTab = index;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.only(bottom: 8), // Espacio para la línea inferior
+        decoration: BoxDecoration(
+          border: isSelected
+              ? const Border(bottom: BorderSide(color: Colors.black, width: 2))
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            color: isSelected ? Colors.black : Colors.grey,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- LISTA DE CUENTAS (TAB 0) ---
+  Widget _buildAccountsList() {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+      children: const [
+        // Ejemplos estáticos basados en tu imagen
+        SearchResultItem(
+          title: 'Olivia Mendoza',
+          subtitle: '@makeup.olivia',
+          isCampaign: false,
+          // Si tu widget soporta imagen, podrías pasarla aquí
+          // imageUrl: '...',
+        ),
+        SizedBox(height: 16),
+        SearchResultItem(
+          title: 'Valeria Makeup',
+          subtitle: '@mk.val',
+          isCampaign: false,
+        ),
+        SizedBox(height: 16),
+        SearchResultItem(
+          title: 'makeupwithclara',
+          subtitle: '@itsclara',
+          isCampaign: false,
+        ),
+        SizedBox(height: 16),
+        SearchResultItem(
+          title: 'Inklop',
+          subtitle: '@inklop.pe',
+          isCampaign: false,
+        ),
+      ],
+    );
+  }
+
+  // --- LISTA DE CAMPAÑAS (TAB 1) ---
+  Widget _buildCampaignsList() {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+      children: const [
+        // Ejemplos de campañas
+        SearchResultItem(
+          title: 'Campaña Maquillaje Verano',
+          subtitle: '@makeup.olivia',
+          isCampaign: true,
+          priceTag: 'S/100 / 1 Video',
+        ),
+        SizedBox(height: 16),
+        SearchResultItem(
+          title: 'Creadores Inklop',
+          subtitle: '@inklop.pe',
+          isCampaign: true,
+          priceTag: 'S/20 / 1K',
+        ),
+        SizedBox(height: 16),
+        SearchResultItem(
+          title: 'Navidad con Topitop',
+          subtitle: '@topitop.pe',
+          isCampaign: true,
+          priceTag: 'S/50 / 1K',
+        ),
+      ],
     );
   }
 }

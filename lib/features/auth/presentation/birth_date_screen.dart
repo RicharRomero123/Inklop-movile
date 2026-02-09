@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+// Asegúrate de que esta ruta sea correcta en tu proyecto
 import 'package:inklop/features/auth/presentation/creator_profile_screen.dart';
 
 class BirthDateScreen extends StatefulWidget {
@@ -11,13 +12,14 @@ class BirthDateScreen extends StatefulWidget {
 
 class _BirthDateScreenState extends State<BirthDateScreen> {
   final _dateController = TextEditingController();
-  final FocusNode _focusNode = FocusNode(); // Para el borde dinámico
+  final FocusNode _focusNode = FocusNode();
   bool _isDateValid = false;
+  // Variable nueva para mostrar el mensaje de error visualmente
+  String? _errorText;
 
   @override
   void initState() {
     super.initState();
-    // Escuchamos el foco para redibujar el borde
     _focusNode.addListener(() => setState(() {}));
   }
 
@@ -29,20 +31,27 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
   }
 
   void _validateDate(String value) {
-    // La longitud ahora es 14 debido a los espacios "DD / MM / AAAA"
+    // 1. Validar longitud
     if (value.length != 14) {
-      if (_isDateValid) setState(() => _isDateValid = false);
+      if (_isDateValid) {
+        setState(() {
+          _isDateValid = false;
+          _errorText = null; // Limpiamos error si está escribiendo
+        });
+      }
       return;
     }
 
     try {
-      // Limpiamos espacios para validar los números puros
+      // 2. Parsear fecha
       List<String> parts = value.replaceAll(' ', '').split('/');
       int day = int.parse(parts[0]);
       int month = int.parse(parts[1]);
       int year = int.parse(parts[2]);
 
       final now = DateTime.now();
+
+      // Validaciones básicas de existencia de fecha
       if (year < 1900 || year > now.year) throw Exception();
       if (month < 1 || month > 12) throw Exception();
 
@@ -53,15 +62,45 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
       }
 
       if (day < 1 || day > daysInMonth(month, year)) throw Exception();
-      setState(() => _isDateValid = true);
+
+      // --- 3. VALIDACIÓN DE MAYORÍA DE EDAD (18 AÑOS) ---
+      final dob = DateTime(year, month, day);
+      int age = now.year - dob.year;
+
+      // Si el mes actual es menor al mes de nacimiento,
+      // o si es el mismo mes pero el día actual es menor al día de nacimiento,
+      // restamos 1 año porque aún no ha cumplido años.
+      if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) {
+        age--;
+      }
+
+      if (age < 18) {
+        setState(() {
+          _isDateValid = false;
+          _errorText = "Debes ser mayor de 18 años para registrarte.";
+        });
+        return; // Detenemos aquí
+      }
+      // ----------------------------------------------------
+
+      // Si pasa todo, es válido
+      setState(() {
+        _isDateValid = true;
+        _errorText = null;
+      });
+
     } catch (e) {
-      setState(() => _isDateValid = false);
+      setState(() {
+        _isDateValid = false;
+        // Si la fecha es inválida (ej: mes 13), limpiamos el error de edad
+        // para no confundir, o podrías poner "Fecha inválida".
+        _errorText = null;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // El borde se activa si tiene foco o ya tiene texto
     bool isActive = _focusNode.hasFocus || _dateController.text.isNotEmpty;
 
     return Scaffold(
@@ -86,7 +125,7 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
           child: Column(
             children: [
               const SizedBox(height: 10),
-              // 1. Icono Pastel Header
+              // Icono Pastel
               Center(
                 child: Container(
                   height: 64,
@@ -119,17 +158,21 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
               ),
               const SizedBox(height: 40),
 
-              // 3. Input Fecha (Mismo tamaño y formato que OTP)
+              // Input Fecha
               Center(
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  width: 280, // Ancho suficiente para DD / MM / AAAA
+                  width: 280,
                   height: 68,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF7F7F7),
                     borderRadius: BorderRadius.circular(35),
+                    // Si hay error de edad, pintamos el borde rojo
                     border: Border.all(
-                      color: isActive ? const Color(0xFFE0E0E0) : const Color(0xFFF3F3F3),
+                      color: _errorText != null
+                          ? Colors.redAccent
+                          : (isActive ? const Color(0xFFE0E0E0) : const Color(0xFFF3F3F3)),
                       width: 1.5,
                     ),
                   ),
@@ -137,13 +180,11 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
                     controller: _dateController,
                     focusNode: _focusNode,
                     textAlign: TextAlign.center,
-                    textAlignVertical: TextAlignVertical.center, // Centrado vertical
                     keyboardType: TextInputType.number,
                     style: const TextStyle(
-                      fontSize: 22, // Un poco más pequeño que OTP para que quepa bien
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
-                      height: 1.0,
                     ),
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
@@ -159,20 +200,36 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
                       ),
                       border: InputBorder.none,
                       counterText: "",
+                      isDense: true,
                       contentPadding: EdgeInsets.zero,
                     ),
-                    onChanged: _validateDate,
+                    onChanged: (value) => _validateDate(value),
                   ),
                 ),
               ),
 
+              // --- Mensaje de Error (Nuevo) ---
+              if (_errorText != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: Text(
+                    _errorText!,
+                    style: const TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+
               const Spacer(),
 
-              // 4. Botón Continuar
+              // Botón Continuar
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: FilledButton(
+                  // Solo permite continuar si es válida (incluyendo > 18 años)
                   onPressed: _isDateValid
                       ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreatorProfileScreen()))
                       : null,
@@ -200,6 +257,7 @@ class _BirthDateScreenState extends State<BirthDateScreen> {
   }
 }
 
+// El formatter se mantiene igual
 class BirthDateInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
@@ -209,8 +267,6 @@ class BirthDateInputFormatter extends TextInputFormatter {
     for (int i = 0; i < newText.length; i++) {
       buffer.write(newText[i]);
       var nonZeroIndex = i + 1;
-
-      // Agregamos " / " con espacios para mejorar el diseño
       if (nonZeroIndex == 2 && nonZeroIndex != newText.length) {
         buffer.write(' / ');
       } else if (nonZeroIndex == 4 && nonZeroIndex != newText.length) {

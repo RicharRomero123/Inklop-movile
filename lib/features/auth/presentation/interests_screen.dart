@@ -9,10 +9,9 @@ class InterestsScreen extends StatefulWidget {
 }
 
 class _InterestsScreenState extends State<InterestsScreen> {
-  // Estado para los intereses seleccionados
   final Set<String> _selectedInterests = {'Gaming', 'Lifestyle'};
 
-  // MAPA DE ICONOS CORREGIDO (Ruta: assets/images/)
+  // MAPA DE ICONOS
   final Map<String, String> _interestIcons = {
     'Grabación de Contenido': 'assets/images/ic_video.png',
     'Clipping': 'assets/images/ic_clipping.png',
@@ -34,131 +33,131 @@ class _InterestsScreenState extends State<InterestsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
-          child: CircleAvatar(
-            backgroundColor: const Color(0xFFF8F8F8),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 16),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-        ),
-      ),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 10),
-                        // Avatar Responsivo
-                        Center(
-                          child: Column(
-                            children: [
-                              Container(
-                                height: 85,
-                                width: 85,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  image: const DecorationImage(
-                                    image: AssetImage('assets/images/user_avatar.png'),
-                                    fit: BoxFit.cover,
-                                  ),
-                                  border: Border.all(color: const Color(0xFFF3F3F3), width: 2),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              const Text('@cesar.mesia', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                            ],
-                          ),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    // AVATAR
+                    Container(
+                      height: 100,
+                      width: 100,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: const DecorationImage(
+                          image: AssetImage('assets/images/user_avatar.png'),
+                          fit: BoxFit.cover,
                         ),
-                        const SizedBox(height: 20),
-                        const Text('Sobre tus intereses', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
-                        const Text(
-                          '¿Qué es lo que te interesa más explorar en nuestra app?',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 15, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 32),
-
-                        _buildSectionTitle('Intereses de Contenido'),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: _contentInterests.map((i) => _buildInterestChip(i)).toList(),
-                          ),
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        _buildSectionTitle('Tipo de Contenido'),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: _typeInterests.map((i) => _buildInterestChip(i)).toList(),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Botón Continuar Fijo
-                Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: FilledButton(
-                      onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => const MainScreen()),
-                              (route) => false,
-                        );
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF1A1A1A),
-                        shape: const StadiumBorder(),
+                        border: Border.all(color: Colors.grey.shade200, width: 1),
                       ),
-                      child: const Text('Continuar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    const Text('@cesar.mesia', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+
+                    const SizedBox(height: 25),
+
+                    // TEXTOS
+                    const Text('Sobre tus intereses', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    Text(
+                      '¿Qué es lo que te interesa más explorar en nuestra app?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                    ),
+                    const SizedBox(height: 35),
+
+                    // SECCIÓN 1: DOS COLUMNAS
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Intereses de Contenido', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey.shade800)),
+                    ),
+                    const SizedBox(height: 12),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 3.8, // Más ancho para que no se vea cuadrado
+                      ),
+                      itemCount: _contentInterests.length,
+                      itemBuilder: (context, index) {
+                        return _buildPillButton(_contentInterests[index]);
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // SECCIÓN 2: TRES COLUMNAS
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Tipo de Contenido', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.grey.shade800)),
+                    ),
+                    const SizedBox(height: 12),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 10,
+                        crossAxisSpacing: 10,
+                        childAspectRatio: 2.4, // Ajustado para forma de cápsula perfecta
+                      ),
+                      itemCount: _typeInterests.length,
+                      itemBuilder: (context, index) {
+                        return _buildPillButton(_typeInterests[index]);
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                  ],
                 ),
-              ],
-            );
-          },
+              ),
+            ),
+
+            // BOTÓN CONTINUAR
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MainScreen()),
+                          (route) => false,
+                    );
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30), // Botón principal muy redondo
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text('Continuar', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-    );
-  }
-
-  Widget _buildInterestChip(String label) {
+  Widget _buildPillButton(String label) {
     final isSelected = _selectedInterests.contains(label);
+
+    // Colores exactos de la referencia
+    final backgroundColor = isSelected ? Colors.black : const Color(0xFFF8F8F8);
+    final textColor = isSelected ? Colors.white : const Color(0xFF9E9E9E);
+    final iconColor = isSelected ? Colors.white : const Color(0xFFBDBDBD);
 
     return GestureDetector(
       onTap: () {
@@ -172,38 +171,36 @@ class _InterestsScreenState extends State<InterestsScreen> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1D1D1D) : const Color(0xFFF7F7F7),
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
-            color: isSelected ? Colors.black : const Color(0xFFEEEEEE),
-            width: 1,
-          ),
+          color: backgroundColor,
+          // AQUÍ ESTÁ EL CAMBIO CLAVE: Radio alto para efecto cápsula/pastilla
+          borderRadius: BorderRadius.circular(100),
         ),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        alignment: Alignment.center,
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // CARGA DE ICONO PNG CON TINTA DINÁMICA
             Image.asset(
               _interestIcons[label] ?? 'assets/images/ic_default.png',
-              height: 18,
-              width: 18,
-              color: isSelected ? Colors.white : const Color(0xFFADADAD),
-              // Esto evita que la app truene si olvidas poner un icono en la carpeta
-              errorBuilder: (context, error, stackTrace) => Icon(
-                  Icons.star_outline,
-                  size: 18,
-                  color: isSelected ? Colors.white : const Color(0xFFADADAD)
-              ),
+              width: 16, // Icono un poco más sutil
+              height: 16,
+              color: iconColor,
+              errorBuilder: (ctx, err, stack) => Icon(Icons.circle, size: 6, color: iconColor),
             ),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF707070),
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 12.5, // Fuente ajustada para encajar bien
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

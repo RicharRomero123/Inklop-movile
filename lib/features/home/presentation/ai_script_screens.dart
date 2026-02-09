@@ -31,7 +31,7 @@ class _GeneratingScriptScreenState extends State<GeneratingScriptScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Botón atrás (opcional, por si se arrepiente)
+            // Botón atrás
             Align(
               alignment: Alignment.topLeft,
               child: IconButton(
@@ -44,7 +44,7 @@ class _GeneratingScriptScreenState extends State<GeneratingScriptScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Icono central animado (o estático con efecto)
+                  // Animación simple de escala
                   TweenAnimationBuilder(
                     tween: Tween<double>(begin: 0.8, end: 1.1),
                     duration: const Duration(seconds: 1),
@@ -69,9 +69,6 @@ class _GeneratingScriptScreenState extends State<GeneratingScriptScreen> {
                         ),
                       );
                     },
-                    onEnd: () {
-                      // Loop simple de animación si quisieras, por ahora el tween hace un efecto nice
-                    },
                   ),
 
                   const SizedBox(height: 30),
@@ -89,7 +86,7 @@ class _GeneratingScriptScreenState extends State<GeneratingScriptScreen> {
                       style: TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
                     ),
                   ),
-                  const SizedBox(height: 50), // Ajuste visual
+                  const SizedBox(height: 50),
                 ],
               ),
             ),
@@ -106,7 +103,7 @@ class ScriptResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // El texto largo del guion
+    // El texto del guion
     const String scriptText = """
 🎬 GUION PROMOCIONAL PARA INKLOP - "Tu contenido, tus reglas, tus ingresos"
 
@@ -167,7 +164,7 @@ Descarga Inklop hoy y empieza a ganar.
             Expanded(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24), // Un poco más de padding interno
                 decoration: BoxDecoration(
                   color: const Color(0xFFF9F9F9),
                   borderRadius: BorderRadius.circular(20),
@@ -175,11 +172,12 @@ Descarga Inklop hoy y empieza a ganar.
                 child: SingleChildScrollView(
                   child: Text(
                     scriptText,
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.6, // Altura de línea para legibilidad
-                      color: Colors.grey.shade800,
-                      fontFamily: 'Courier', // Fuente tipo guion (opcional)
+                    style: const TextStyle(
+                      // CAMBIO AQUI: Quitamos fontFamily: 'Courier'
+                      fontSize: 15, // Letra un poco más grande
+                      height: 1.5,  // Altura de línea cómoda
+                      color: Colors.black87, // Color negro suave, no gris
+                      fontWeight: FontWeight.w400, // Peso normal
                     ),
                   ),
                 ),
@@ -204,8 +202,8 @@ Descarga Inklop hoy y empieza a ganar.
                             const SnackBar(content: Text('Guión copiado al portapapeles')),
                           );
                         },
-                        icon: const Icon(Icons.copy, size: 18, color: Colors.black),
-                        label: const Text('Copiar', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.copy, size: 20, color: Colors.black),
+                        label: const Text('Copiar', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Colors.black),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -220,14 +218,13 @@ Descarga Inklop hoy y empieza a ganar.
                       height: 56,
                       child: FilledButton.icon(
                         onPressed: () {
-                          // Regresamos a la pantalla de carga para simular nuevo proceso
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (_) => const GeneratingScriptScreen()),
                           );
                         },
-                        icon: const Icon(Icons.auto_awesome, size: 18, color: Colors.white),
-                        label: const Text('Generar Otro', style: TextStyle(fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.auto_awesome, size: 20, color: Colors.white),
+                        label: const Text('Generar Otro', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         style: FilledButton.styleFrom(
                           backgroundColor: const Color(0xFF1A1A1A),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
