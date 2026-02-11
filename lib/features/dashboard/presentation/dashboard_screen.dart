@@ -1,329 +1,148 @@
 import 'package:flutter/material.dart';
-import 'package:inklop/features/home/presentation/Video_Analytics_Screen.dart';
-import 'my_campaigns_screen.dart';
 
-class DashboardScreen extends StatefulWidget {
+// --- TUS IMPORTACIONES ---
+import 'my_campaigns_screen.dart';
+import 'package:inklop/features/home/presentation/Video_Analytics_Screen.dart';
+
+class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  int _selectedFilterIndex = 0;
-  final List<String> _filters = ['Todos', 'Aceptados', 'Pendientes', 'Denegados'];
-
-  @override
   Widget build(BuildContext context) {
-    // ==========================================
-    // VARIABLES DE DIMENSIÓN
-    // ==========================================
-
-    // 1. Altura del fondo morado
-    final double headerHeight = 100.0;
-
-    // 2. Dónde empiezan las 3 tarjetas (Top Offset)
-    final double cardTopOffset = 100.0;
-
-    // 3. Altura de las tarjetas de métricas
-    final double cardsHeight = 95.0;
-
-    // 4. ALTURA TOTAL DEL BLOQUE FIJO
-    // Sumamos offset + altura de cards + un margen extra (20) para la sombra inferior.
-    // Esto define el tamaño exacto del área que NO se va a mover.
-    final double totalFixedHeaderHeight = cardTopOffset + cardsHeight + 20;
-
     return Scaffold(
-      backgroundColor: Colors.white,
-      // Usamos Column para separar físicamente lo estático de lo scrollable
+      backgroundColor: const Color(0xFFF8F9FA),
       body: Column(
         children: [
-          // ==================================================
-          // 1. SECCIÓN ESTÁTICA (HEADER + TARJETAS)
-          // ==================================================
-          // Este SizedBox define el "techo" que nunca se moverá.
-          SizedBox(
-            height: totalFixedHeaderHeight,
-            child: Stack(
-              clipBehavior: Clip.none, // Permite que las sombras se vean bien
+          // ---------------------------------------------
+          // ZONA ESTÁTICA
+          // ---------------------------------------------
+
+          // 1. HEADER (Con Gradiente Morado a Negro)
+          const HeaderSection(),
+
+          // 2. MÉTRICAS y CAMPAÑAS
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 15, 16, 5),
+            child: Column(
               children: [
-                // A. FONDO MORADO
-                Positioned(
-                  top: 0, left: 0, right: 0,
-                  height: headerHeight,
-                  child: Container(
-                    padding: const EdgeInsets.only(top: 55, left: 24, right: 24),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF2D0052), Color(0xFF15002B)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+                // Fila de Métricas con iconos PNG y texto BOLD
+                const MetricsRow(),
+
+                const SizedBox(height: 15),
+
+                // Título Campañas y Botón "Ver todas"
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Campañas Activas",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Tus Métricas',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold
-                          ),
+
+                    // NAVEGACIÓN A CAMPAÑAS
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const MyCampaignsScreen()),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ],
+                        child: const Text(
+                          "Ver todas",
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
 
-                // B. TARJETAS FLOTANTES (3 CARDS)
-                Positioned(
-                  top: cardTopOffset,
-                  left: 20,
-                  right: 20,
-                  height: cardsHeight,
-                  child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(child: MetricCard(
-                          label: 'Vistas\nTotales',
-                          value: '40.2K',
-                          iconPath: 'assets/images/ic_views.png'
-                      )),
-                      SizedBox(width: 10),
-                      Expanded(child: MetricCard(
-                          label: 'Videos\nAceptados',
-                          value: '10',
-                          iconPath: 'assets/images/ic_video_check.png'
-                      )),
-                      SizedBox(width: 10),
-                      Expanded(child: MetricCard(
-                          label: 'Engagement\nPromedio',
-                          value: '1.3%',
-                          iconPath: 'assets/images/ic_engagement.png'
-                      )),
-                    ],
-                  ),
-                ),
+                const SizedBox(height: 10),
+                const CampaignCard(),
               ],
             ),
           ),
 
-          // ==================================================
-          // 2. SECCIÓN SCROLLABLE (CAMPAÑAS Y VIDEOS)
-          // ==================================================
-          // Expanded hace que esta parte ocupe todo el espacio restante.
+          // ---------------------------------------------
+          // ZONA SCROLLEABLE
+          // ---------------------------------------------
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(top: 10, bottom: 20), // Padding normal
-              children: [
-
-                // --- ZONA DE CAMPAÑAS Y FILTROS ---
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header Campañas
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Campañas Activas', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const MyCampaignsScreen()));
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                              decoration: BoxDecoration(color: const Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(20)),
-                              child: const Text('Ver todas', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Tarjeta de Campaña
-                      const ActiveCampaignCard(),
-
-                      const SizedBox(height: 20),
-
-                      // Header Mi Contenido
-                      const Text('Mi Contenido', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 10),
-
-                      // Filtros (Barra negra)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E1E1E),
-                          borderRadius: BorderRadius.circular(40),
-                        ),
-                        child: Row(
-                          children: List.generate(_filters.length, (index) {
-                            return Expanded(
-                              child: GestureDetector(
-                                onTap: () => setState(() => _selectedFilterIndex = index),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: _selectedFilterIndex == index ? Colors.white : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(30),
-                                  ),
-                                  child: Text(
-                                    _filters[index],
-                                    style: TextStyle(
-                                      color: _selectedFilterIndex == index ? Colors.black : Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 10,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                    ],
+            child: Container(
+              width: double.infinity,
+              color: const Color(0xFFF8F9FA),
+              child: ListView(
+                // Padding ajustado
+                padding: const EdgeInsets.only(top: 10, left: 16, right: 16, bottom: 20),
+                children: [
+                  const Text(
+                    "Mi Contenido",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ),
+                  const SizedBox(height: 8),
 
-                const SizedBox(height: 15),
+                  // Tabs (Filtros)
+                  const CustomTabBar(),
 
-                // --- GRID DE VIDEOS ---
-                // Nota: Usamos shrinkWrap y NeverScrollableScrollPhysics
-                // para que scrollee junto con el ListView padre.
-                GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 0.6,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: 12,
-                  itemBuilder: (context, index) {
-                    return _buildContentGridItem(index);
-                  },
-                ),
-              ],
+                  // --- ESPACIO REDUCIDO AQUÍ (Entre filtros y videos) ---
+                  const SizedBox(height: 8),
+
+                  // GRID DE VIDEOS
+                  const ContentGrid(),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-  // --- WIDGET DE ITEM DEL GRID (IGUAL QUE ANTES) ---
-  Widget _buildContentGridItem(int index) {
-    String status = index % 3 == 0 ? 'Aceptado' : (index % 2 == 0 ? 'Pendiente' : 'Denegado');
-    Color statusColor = status == 'Aceptado' ? const Color(0xFF5DD669) : (status == 'Pendiente' ? Colors.orange : Colors.red);
-    String price = index % 2 == 0 ? 'S/40.00' : 'S/100.00';
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const VideoAnalyticsScreen()));
-      },
-      child: Container(
-        decoration: BoxDecoration(
-            color: const Color(0xFFF3F3F3),
-            borderRadius: BorderRadius.circular(12),
-            image: const DecorationImage(
-              image: NetworkImage('https://via.placeholder.com/200x300'),
-              fit: BoxFit.cover,
-            )
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: 6, right: 6,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(4)),
-                child: Text(status, style: const TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
-              ),
-            ),
-            Positioned(
-              top: 6, left: 6,
-              child: Row(
-                children: [
-                  const Icon(Icons.remove_red_eye, color: Colors.white, size: 9),
-                  const SizedBox(width: 4),
-                  Text('${(index + 1) * 215}', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-            Positioned(
-              bottom: 8, left: 0, right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-                  child: Text(price, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-// ==========================================
-// WIDGETS AUXILIARES (IGUAL QUE ANTES)
-// ==========================================
+// -----------------------------------------------------------------------------
+// WIDGETS AUXILIARES
+// -----------------------------------------------------------------------------
 
-class MetricCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final String iconPath;
-
-  const MetricCard({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.iconPath,
-  });
+class HeaderSection extends StatelessWidget {
+  const HeaderSection({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 15, offset: const Offset(0, 5))
-        ],
+      width: double.infinity,
+      padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 25),
+      decoration: const BoxDecoration(
+        // --- CAMBIO AQUÍ: USO DE GRADIENTE ---
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF2A0D45), // Morado oscuro original
+            Colors.black,      // Negro
+          ],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset(
-            iconPath,
-            width: 20,
-            height: 20,
-            errorBuilder: (context, error, stackTrace) => const Icon(Icons.show_chart, size: 20, color: Color(0xFF2D0052)),
-          ),
-          const SizedBox(height: 6),
           Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.black54, fontSize: 9, height: 1.1),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.w800),
+            "Tus Métricas",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -331,8 +150,95 @@ class MetricCard extends StatelessWidget {
   }
 }
 
-class ActiveCampaignCard extends StatelessWidget {
-  const ActiveCampaignCard({super.key});
+class MetricsRow extends StatelessWidget {
+  const MetricsRow({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: const [
+        // Usamos los paths de tus assets aquí
+        MetricCard(
+            iconPath: "assets/images/ic_views.png",
+            label: "Vistas\nTotales",
+            value: "40.2K"
+        ),
+        MetricCard(
+            iconPath: "assets/images/ic_video_check.png",
+            label: "Videos\nAceptados",
+            value: "10"
+        ),
+        MetricCard(
+            iconPath: "assets/images/ic_engagement.png",
+            label: "Engagement\nPromedio",
+            value: "1.3%"
+        ),
+      ],
+    );
+  }
+}
+
+class MetricCard extends StatelessWidget {
+  final String iconPath;
+  final String label;
+  final String value;
+
+  const MetricCard({
+    super.key,
+    required this.iconPath,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    double cardWidth = (MediaQuery.of(context).size.width - 48) / 3;
+
+    return Container(
+      width: cardWidth,
+      // AUMENTADO: Padding vertical para hacer las cards más grandes
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Imagen del asset
+          Image.asset(
+            iconPath,
+            width: 28, // Tamaño del icono ajustado
+            height: 28,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 11, color: Colors.black54, height: 1.2),
+          ),
+          const SizedBox(height: 6),
+          // AUMENTADO: Texto más grande y Extra Bold
+          Text(
+            value,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CampaignCard extends StatelessWidget {
+  const CampaignCard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -340,44 +246,49 @@ class ActiveCampaignCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 2)),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: 45, height: 45,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            padding: const EdgeInsets.all(6),
-            child: const Icon(Icons.local_offer, color: Colors.orange),
+            width: 42,
+            height: 42,
+            decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+            alignment: Alignment.center,
+            child: const Text("t", style: TextStyle(fontStyle: FontStyle.italic, color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Navidad con Topitop', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const Text('@topitop.pe', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                const Text("Navidad con Topitop", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                const Text("@topitop.pe", style: TextStyle(color: Colors.grey, fontSize: 12)),
                 const SizedBox(height: 6),
-                Row(children: [_buildTag('Recomendación'), const SizedBox(width: 6), _buildTag('Tech')]),
+                Row(
+                  children: [
+                    _buildTag("Recomendación"),
+                    const SizedBox(width: 5),
+                    _buildTag("Tech"),
+                    const SizedBox(width: 5),
+                    const Icon(Icons.tiktok, size: 14, color: Colors.black),
+                  ],
+                )
               ],
             ),
           ),
           Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(20)),
-                child: const Text('S/20/1K', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                decoration: BoxDecoration(color: const Color(0xFF333333), borderRadius: BorderRadius.circular(8)),
+                child: const Text("s/20/1K", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
               ),
+              const SizedBox(height: 8),
+              const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
             ],
           )
         ],
@@ -387,9 +298,142 @@ class ActiveCampaignCard extends StatelessWidget {
 
   Widget _buildTag(String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(6)),
-      child: Text(text, style: const TextStyle(fontSize: 8, color: Colors.grey)),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(5)),
+      child: Text(text, style: const TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.w500)),
+    );
+  }
+}
+
+class CustomTabBar extends StatelessWidget {
+  const CustomTabBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C1E),
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: Row(
+        children: [
+          _buildTab("Todos", true),
+          _buildTab("Aceptados", false),
+          _buildTab("Pendientes", false),
+          _buildTab("Denegados", false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTab(String text, bool isSelected) {
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(25),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isSelected ? Colors.black : Colors.grey,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            fontSize: 10,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ContentGrid extends StatelessWidget {
+  const ContentGrid({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 0.55,
+        crossAxisSpacing: 6,
+        mainAxisSpacing: 6,
+      ),
+      itemCount: 9,
+      itemBuilder: (context, index) {
+        return _buildVideoCard(context, index);
+      },
+    );
+  }
+
+  Widget _buildVideoCard(BuildContext context, int index) {
+    // NAVEGACIÓN A VIDEO ANALYTICS
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const VideoAnalyticsScreen()),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
+          image: const DecorationImage(
+            image: NetworkImage("https://picsum.photos/300/500"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black26, Colors.transparent, Colors.black45],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 5,
+              right: 5,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                decoration: BoxDecoration(color: const Color(0xFF4ADE80), borderRadius: BorderRadius.circular(6)),
+                child: const Text("Aceptado", style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            Positioned(
+              top: 5,
+              left: 5,
+              child: Row(
+                children: const [
+                  Icon(Icons.remove_red_eye, color: Colors.white, size: 8),
+                  SizedBox(width: 2),
+                  Text("2.1K", style: TextStyle(color: Colors.white, fontSize: 8)),
+                ],
+              ),
+            ),
+            Positioned(
+              bottom: 6,
+              left: 5,
+              right: 5,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                alignment: Alignment.center,
+                child: const Text("s/40.00 🔒", style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
+              ),
+            )
+          ],
+        ),
+      ),
     );
   }
 }
